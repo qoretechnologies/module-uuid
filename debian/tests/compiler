@@ -1,0 +1,16 @@
+#!/bin/sh
+# Copyright (C) 2026 David Nichols
+# SPDX-License-Identifier: MIT
+set -eu
+unset QORE_MODULE_DIR QORE_MODULE_DIR_ONLY QORE_INCLUDE_DIR LD_LIBRARY_PATH LD_PRELOAD
+cd "$AUTOPKGTEST_TMP"
+cat > uuid-smoke.q <<'EOF'
+%modern
+%requires uuid
+UUID value(uuid_string: "1b4e28ba-2fa1-11d2-883f-b9a761bde3fb");
+if (value.toString(format: UUID::LowerCase) != "1b4e28ba-2fa1-11d2-883f-b9a761bde3fb") {
+    exit(1);
+}
+EOF
+/usr/bin/qcc -o uuid-smoke uuid-smoke.q
+./uuid-smoke

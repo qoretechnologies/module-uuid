@@ -1,0 +1,92 @@
+Debian/Ubuntu packaging for the UUID module
+==========================================
+
+This directory is the first independent-module packaging example. The native
+module and its qpp metadata belong to qore-uuid-module; HTML documentation and
+the upstream example test belong to qore-uuid-module-doc. Debhelper generates
+qore-uuid-module-dbgsym automatically. JSON, YAML and other modules bundled in
+the Qore source tree remain in Qore's own packages.
+
+Build prerequisites and supported scope
+--------------------------------------
+
+Install the matching packaged Qore runtime and libqore-dev in an isolated
+Debian/Ubuntu build environment, then satisfy debian/control. A /usr/local or
+/opt source installation is not a substitute for the packaged SDK. The Qore
+package repository and its dependency backports must be configured first.
+
+Qualification currently targets Ubuntu 26.04 amd64 using the locally qualified
+Qore 3.0 development packages. Debian and other Ubuntu releases require a
+qualified Qore SDK for that distribution and a separate native build/test run.
+Do not install the Ubuntu binary on Debian or relabel it for another release.
+Cross compilation is deliberately rejected: qpp and Qore execute during builds.
+
+Builds use debhelper compatibility level 13, CMake, system libuuid, distribution
+compiler/hardening flags, and ordinary dh_strip automatic debug packages.
+UUID has no AOT user modules, so there are no Qore EOF trailers to preserve.
+Modules containing AOT user modules must preserve their trailers around stripping
+as Qore's debian/preserve-aot-metadata.py does; do not copy UUID's strip behavior
+to such modules without adapting it.
+
+Native modules deliberately resolve Qore symbols at load time instead of linking
+libqore. Therefore dh_shlibdeps cannot supply that dependency. debian/rules
+derives a versioned libqore SONAME package dependency from the installed SDK and
+also requires at least that version of qore. Other native library dependencies
+come from dh_shlibdeps. The runtime package is not Multi-Arch: same: it requires
+the native interpreter and includes shared compiler metadata.
+
+Source and binary builds
+------------------------
+
+The snapshot revision in debian/changelog is UNRELEASED. Change its version and
+distribution for an actual upload, and use a new revision for every changed
+source package. A future upstream release must sort after the development
+snapshot (for example, 1.4.3 sorts after 1.4.2+git20260928.1).
+
+From a clean committed checkout, prepare an original source archive without
+debian/ and extract it beside a copy containing debian/. For this snapshot:
+
+    version=1.4.2+git20260928.1
+    mkdir -p ../uuid-package-work
+    git archive --format=tar --prefix="qore-uuid-module-$version/" \
+        HEAD -- . ':!debian' | xz > \
+        "../uuid-package-work/qore-uuid-module_$version.orig.tar.xz"
+    tar -xf "../uuid-package-work/qore-uuid-module_$version.orig.tar.xz" \
+        -C ../uuid-package-work
+    cp -a debian "../uuid-package-work/qore-uuid-module-$version/"
+    cd "../uuid-package-work/qore-uuid-module-$version"
+    dpkg-buildpackage -S -us -uc
+
+Feed the .dsc to sbuild or another clean native build environment with all
+Build-Depends preinstalled. Extract the .dsc with dpkg-source -x, then run as
+an unprivileged user with networking disabled:
+
+    dpkg-buildpackage -b -us -uc
+
+The upstream suite runs against the newly built module. DEB_BUILD_OPTIONS may
+contain parallel=N, noopt, nostrip or nocheck. Both DEB_BUILD_OPTIONS=nodoc and
+DEB_BUILD_PROFILES=nodoc suppress documentation generation; the nodoc profile
+also omits the documentation package. An architecture-only build uses -B and
+does not require Doxygen. Do not use nocheck for a release qualification.
+
+Qualification and publication
+-----------------------------
+
+Run Lintian on the source and binary .changes. In a fresh disposable testbed,
+run autopkgtest on the source and built runtime/documentation packages; its
+runtime test loads only the installed UUID module, and its compiler test uses
+the installed SDK to compile and execute a program with named UUID arguments.
+Neither test needs external services. Also verify runtime-only installation
+without libqore-dev, coinstallation of documentation and matching debug symbols,
+dpkg -V, purge/reinstall, and byte-identical packages from two distinct build
+directories. Keep package hashes, SDK versions, logs, and the source commit.
+
+Local qualification does not publish anything. Release uploads require the
+final Qore ABI decision, supported distribution/architecture qualification,
+source signing, and an explicit release/publication step. The generated minimum
+runtime dependency may refer to a local development package until that qualified
+Qore version is available in the target archive.
+
+For the next module, inspect its native libraries, Qore module requirements,
+user modules/resources, generated metadata, optional features, third-party
+licenses and service-dependent tests before adapting this example.

@@ -32,3 +32,13 @@ src/ql_*.cpp
 src/QC_*.cpp
 src/QC_*.qtest
 docs/*.tag
+
+# Debian package build output
+obj-*/
+debian/.debhelper/
+debian/debhelper-build-stamp
+debian/files
+debian/*.substvars
+debian/qore-uuid-module/
+debian/qore-uuid-module-doc/
+debian/tmp/

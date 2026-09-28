@@ -1,0 +1,9 @@
+qore-uuid-module (1.4.2+git20260928.1-0qore1~ubuntu26.04) UNRELEASED; urgency=medium
+
+  * Add native Debian/Ubuntu packaging for the UUID module, compiler metadata,
+    HTML documentation and examples, with automatic debug symbols.
+  * Build and test against the packaged Qore SDK; record the libqore ABI
+    dependency explicitly because native modules resolve Qore symbols at load.
+  * Run the upstream suite during builds and against installed packages.
+
+ -- David Nichols <david@qore.org>  Mon, 28 Sep 2026 12:00:00 +0200

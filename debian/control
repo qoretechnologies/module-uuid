@@ -1,0 +1,40 @@
+Source: qore-uuid-module
+Section: interpreters
+Priority: optional
+Maintainer: David Nichols <david@qore.org>
+Build-Depends: debhelper-compat (= 13),
+               cmake (>= 3.5),
+               libqore-dev (>= 3.0.0~),
+               qore (>= 3.0.0~),
+               uuid-dev
+Build-Depends-Indep: doxygen <!nodoc>
+Standards-Version: 4.7.4
+Rules-Requires-Root: no
+Homepage: https://qore.org
+Vcs-Git: https://github.com/qoretechnologies/module-uuid.git
+Vcs-Browser: https://github.com/qoretechnologies/module-uuid
+
+Package: qore-uuid-module
+Architecture: any
+Depends: ${qore:Depends},
+         ${shlibs:Depends},
+         ${misc:Depends}
+Suggests: qore-uuid-module-doc
+Description: UUID generation and manipulation module for Qore
+ This module provides the Qore UUID class for generating random and time-based
+ universally unique identifiers, parsing identifiers, and comparing, copying,
+ and formatting their values. It uses the system libuuid library.
+ .
+ Compiler metadata is included for Qore's development tools.
+
+Package: qore-uuid-module-doc
+Section: doc
+Architecture: all
+Multi-Arch: foreign
+Build-Profiles: <!nodoc>
+Depends: ${misc:Depends}
+Suggests: qore-uuid-module
+Description: documentation and examples for Qore's UUID module
+ This package contains the HTML API reference and example test program for
+ the Qore UUID module, which generates and manipulates universally unique
+ identifiers using the system libuuid library.

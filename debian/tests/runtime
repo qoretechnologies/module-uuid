@@ -1,0 +1,9 @@
+#!/bin/sh
+# Copyright (C) 2026 David Nichols
+# SPDX-License-Identifier: MIT
+set -eu
+unset QORE_MODULE_DIR QORE_MODULE_DIR_ONLY QORE_INCLUDE_DIR LD_LIBRARY_PATH LD_PRELOAD
+# Run away from the source/build tree, without a preloaded module or module path.
+cp test/uuid-test.qtest "$AUTOPKGTEST_TMP/uuid-test.qtest"
+cd "$AUTOPKGTEST_TMP"
+exec /usr/bin/qore ./uuid-test.qtest -v

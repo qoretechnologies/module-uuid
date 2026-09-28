@@ -1,0 +1,7 @@
+Tests: runtime
+Depends: qore-uuid-module, qore
+# QUnit writes progress messages to stderr even when every assertion passes.
+Restrictions: allow-stderr
+
+Tests: compiler
+Depends: qore-uuid-module, libqore-dev

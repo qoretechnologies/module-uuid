@@ -1,0 +1,77 @@
+#!/usr/bin/make -f
+# Copyright (C) 2026 David Nichols
+# SPDX-License-Identifier: MIT
+
+include /usr/share/dpkg/architecture.mk
+
+builddir = obj-$(DEB_HOST_GNU_TYPE)
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export TZ = UTC
+unexport CMAKE_PREFIX_PATH
+unexport LD_LIBRARY_PATH
+unexport LD_PRELOAD
+unexport QORE_MODULE_DIR
+unexport QORE_INCLUDE_DIR
+unexport QORE_INCLUDE_DIRS
+unexport QORE_LIBDIR
+unexport DOXYGEN_EXECUTABLE
+# All Qore tools must use this build and the packaged standard library only.
+export QORE_MODULE_DIR_ONLY = 1
+stdlib_paths := $(shell env -u QORE_MODULE_DIR -u QORE_MODULE_DIR_ONLY /usr/bin/qore --module-path)
+export QORE_MODULE_DIR = $(CURDIR)/$(builddir):$(stdlib_paths)
+
+build_docs = $(if $(filter nodoc,$(DEB_BUILD_OPTIONS) $(DEB_BUILD_PROFILES)),,$(filter qore-uuid-module-doc,$(shell dh_listpackages)))
+
+%:
+	dh $@ --buildsystem=cmake --builddirectory=$(builddir) --without=autoreconf
+
+override_dh_auto_configure:
+	# qpp and Qore run during a native build; cross builds need a separate host SDK.
+	test '$(DEB_BUILD_GNU_TYPE)' = '$(DEB_HOST_GNU_TYPE)'
+	dh_auto_configure -- \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_SKIP_RPATH=ON \
+		-DCMAKE_SKIP_INSTALL_RPATH=ON \
+		-DCMAKE_IGNORE_PREFIX_PATH=/usr/local \
+		-DQore_DIR:PATH=/usr/lib/$(DEB_HOST_MULTIARCH)/cmake/Qore \
+		-DQORE_EXECUTABLE:FILEPATH=/usr/bin/qore \
+		-DQORE_QPP_EXECUTABLE:FILEPATH=/usr/bin/qpp \
+		-DCMAKE_DISABLE_FIND_PACKAGE_Doxygen=$(if $(build_docs),OFF,ON)
+
+override_dh_auto_build:
+	dh_auto_build
+ifneq (,$(build_docs))
+	dh_auto_build -- docs
+endif
+
+override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	# Explicit preload ensures an installed copy cannot mask the newly built module.
+	/usr/bin/qore -l $(CURDIR)/$(builddir)/uuid-api-$$(/usr/bin/qore --latest-module-api).qmod test/uuid-test.qtest -v
+endif
+
+override_dh_installdocs:
+	dh_installdocs -pqore-uuid-module
+ifneq (,$(build_docs))
+	dh_installdocs -pqore-uuid-module-doc --doc-main-package=qore-uuid-module-doc $(builddir)/docs/uuid/html
+else
+ifneq (,$(filter qore-uuid-module-doc,$(shell dh_listpackages)))
+	dh_installdocs -pqore-uuid-module-doc --doc-main-package=qore-uuid-module-doc
+endif
+endif
+
+override_dh_missing:
+	dh_missing --fail-missing
+
+override_dh_gencontrol:
+	# Native Qore modules deliberately do not link libqore (upstream issue 3802).
+	# Extract its SONAME package from the installed SDK's exact dependency;
+	# dh_shlibdeps still supplies libc, libstdc++ and libuuid dependencies.
+	if dh_listpackages | grep -qx qore-uuid-module; then \
+		qore_lib_dep=$$(dpkg-query -W -f='$${Depends}' libqore-dev | tr ',' '\n' | \
+			sed -n 's/^ *\(libqore[0-9][0-9]*\) (= \([^)]*\))$$/\1 (>= \2)/p'); \
+		test -n "$$qore_lib_dep" || exit 1; \
+		qore_version=$$(dpkg-query -W -f='$${Version}' libqore-dev); \
+		dh_gencontrol -pqore-uuid-module -- "-Vqore:Depends=$$qore_lib_dep, qore (>= $$qore_version)"; \
+	fi
+	dh_gencontrol --remaining-packages
