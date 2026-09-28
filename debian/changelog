@@ -1,4 +1,4 @@
-qore-uuid-module (1.4.2+git20260928.1-0qore1~ubuntu26.04) UNRELEASED; urgency=medium
+qore-uuid-module (1.4.2+git20260928.1-0qore1~ubuntu26.04) resolute; urgency=medium
 
   * Add native Debian/Ubuntu packaging for the UUID module, compiler metadata,
     HTML documentation and examples, with automatic debug symbols.

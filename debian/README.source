@@ -38,9 +38,9 @@ the native interpreter and includes shared compiler metadata.
 Source and binary builds
 ------------------------
 
-The snapshot revision in debian/changelog is UNRELEASED. Change its version and
-distribution for an actual upload, and use a new revision for every changed
-source package. A future upstream release must sort after the development
+The snapshot revision in debian/changelog targets the Ubuntu resolute testing
+PPA. Change its version and distribution for another target, and use a new
+revision for every changed source package after upload. A future upstream release must sort after the development
 snapshot (for example, 1.4.3 sorts after 1.4.2+git20260928.1).
 
 From a clean committed checkout, prepare an original source archive without
