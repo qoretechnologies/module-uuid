@@ -19,6 +19,7 @@ DOX = uuid
 DOXYGEN_QORE_API_FILTER=docs/doxygen-api-filter.q
 DOXYGEN_OUTPUT=docs/uuid/html
 DOXYFILES = docs/doxyfile docs/mainpage.doxygen
+DOXYFILES += docs/guide-uuidreleasenotes.dox
 QDX = qdx
 DX_CLEANFILES = ${DOXYFILES}
 
@@ -60,6 +61,9 @@ libtool: $(LIBTOOL_DEPS)
 docs/mainpage.doxygen: docs/mainpage.doxygen.tmpl
 	$(QDX) -d $< $@
 
+docs/guide-uuidreleasenotes.dox: docs/guide-uuidreleasenotes.dox.tmpl
+	$(QDX) -d $< $@
+
 docs/doxyfile: docs/doxyfile.tmpl
 	sed -e s/__VERSION__/${VERSION}/ -e s:__USERMODDIR__:${usermoddir}: $< > $@
 
@@ -68,3 +72,6 @@ tests:
 
 tests-ci:
 	@for i in $(TESTSCRIPTS); do qore $$i --format=junit --verbose; done
+
+# Documentation guide sources shipped with the module.
+EXTRA_DIST += docs/guide-uuidreleasenotes.dox.tmpl

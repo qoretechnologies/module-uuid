@@ -61,6 +61,7 @@ SET (module_name "uuid")
 
 set(QORE_DOX_TMPL_SRC
   docs/mainpage.doxygen.tmpl
+    docs/guide-uuidreleasenotes.dox.tmpl
 )
 
 add_library(${module_name} MODULE ${QPP_SOURCES} ${CPP_SRC})
@@ -71,6 +72,9 @@ endif()
 
 # Limit the public API reference to generated Qore declarations.
 set(MODULE_DOX_INPUT ${CMAKE_BINARY_DIR}/mainpage.dox ${QPP_DOX_SRC})
+list(APPEND MODULE_DOX_INPUT
+    ${CMAKE_CURRENT_BINARY_DIR}/guide-uuidreleasenotes.dox
+)
 qore_external_binary_module(${module_name} "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}" ${UUID_LIBRARY})
 qore_user_modules("${QMOD}")
 
