@@ -55,7 +55,7 @@ set(CPP_SRC
 set(QMOD
 )
 
-qore_wrap_qpp_value(QPP_SOURCES METALIST QPP_META_SRC ${QPP_SRC})
+qore_wrap_qpp_value(QPP_SOURCES DOXLIST QPP_DOX_SRC METALIST QPP_META_SRC ${QPP_SRC})
 
 SET (module_name "uuid")
 
@@ -69,6 +69,8 @@ if (DEFINED ENV{DOXYGEN_EXECUTABLE})
     set(DOXYGEN_EXECUTABLE $ENV{DOXYGEN_EXECUTABLE})
 endif()
 
+# Limit the public API reference to generated Qore declarations.
+set(MODULE_DOX_INPUT ${CMAKE_BINARY_DIR}/mainpage.dox ${QPP_DOX_SRC})
 qore_external_binary_module(${module_name} "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}" ${UUID_LIBRARY})
 qore_user_modules("${QMOD}")
 
