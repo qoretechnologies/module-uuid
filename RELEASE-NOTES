@@ -1,2 +1,2 @@
-See release notes in the module documentation:
-https://qoretechnologies.com/manual/qore/modules/uuid/current/html/index.html#uuidreleasenotes
+See the uuid module release notes in the generated Doxygen documentation.
+The authoritative source is docs/guide-uuidreleasenotes.dox.tmpl.
