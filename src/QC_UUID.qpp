@@ -1,5 +1,6 @@
 /* -*- mode: c++; indent-tabs-mode: nil -*- */
-/** @file QC_UUID.qpp UUID class definition
+/** @file
+  UUID class definition
 
   uuid Qore module
 

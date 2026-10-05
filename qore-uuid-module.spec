@@ -12,17 +12,21 @@
 %bcond_without docs
 Name: qore-uuid-module
 Version: 1.4.2
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: UUID generation and parsing for Qore
 License: MIT
 URL: https://github.com/qoretechnologies/module-uuid
-Source0: %{name}-%{version}.tar.xz
+# Reproducible archive from the pinned Git revision in source-manifest.json.
+Source0: https://api.opensuse.org/public/source/home:davidnichols:qore:testing/%{name}/%{name}-%{version}.tar.xz
 BuildRequires: cmake >= 3.5
 BuildRequires: make
 BuildRequires: gcc-c++
 BuildRequires: pkgconfig(uuid)
 BuildRequires: qore-devel >= 3.0.0~
 BuildRequires: qore-rpm-macros >= 3.0.0~
+%if %{with tests}
+BuildRequires: python3
+%endif
 %if %{with docs}
 BuildRequires: doxygen
 %if 0%{?suse_version}
@@ -51,13 +55,15 @@ API reference and examples for Qore's UUID module.
 qore_set_source_prefix_maps "%{qore_debug_source_dir}"
 cmake -S . -B build -G 'Unix Makefiles' \
   -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS_RELEASE=-DNDEBUG \
-  -DCMAKE_INSTALL_PREFIX=%{_prefix} -DCMAKE_INSTALL_LIBDIR=%{_lib} \
+  -DCMAKE_INSTALL_PREFIX=%{_prefix} \
   -DCMAKE_SKIP_RPATH=ON -DCMAKE_IGNORE_PREFIX_PATH=/usr/local \
+  -DQORE_GENERATE_JAVA_BINDINGS=OFF \
   -DQore_DIR=%{_libdir}/cmake/Qore -DQORE_EXECUTABLE=/usr/bin/qore \
   -DQORE_QPP_EXECUTABLE=/usr/bin/qpp \
   -DCMAKE_DISABLE_FIND_PACKAGE_Doxygen=%{!?with_docs:ON}%{?with_docs:OFF}
 cmake --build build -- %{?_smp_mflags}
 %if %{with docs}
+printf "\nWARN_AS_ERROR = FAIL_ON_WARNINGS\n" >> build/Doxyfile
 cmake --build build --target docs -- %{?_smp_mflags}
 %endif
 %install
@@ -71,6 +77,12 @@ hardlink -t -O %{buildroot}%{_docdir}/%{name}-doc
 %check
 %if %{with tests}
 . %{_rpmconfigdir}/qore/module-env.sh
+python3 -B -W error -m unittest discover -s test -p test_uninstall.py -v
+uuid_uninstall_stage="$PWD/staged-uninstall"
+DESTDIR="$uuid_uninstall_stage" cmake --install build
+test -s "$uuid_uninstall_stage%{_libdir}/qore-modules/uuid-api-$(/usr/bin/qore --latest-module-api).qmod"
+DESTDIR="$uuid_uninstall_stage" cmake --build build --target uninstall
+test -z "$(find "$uuid_uninstall_stage" -type f -o -type l)"
 /usr/bin/qore -b --enable-debug -l "$PWD/build/uuid-api-$(/usr/bin/qore --latest-module-api).qmod" test/uuid-test.qtest -v
 %endif
 %files
@@ -85,5 +97,9 @@ hardlink -t -O %{buildroot}%{_docdir}/%{name}-doc
 %doc %{_docdir}/%{name}-doc/
 %endif
 %changelog
+* Mon Oct 05 2026 David Nichols <david@qore.org> - 1.4.2-3
+- Correct the generated reference's file annotation and require warning-free documentation.
+- Provide a tested staged uninstall target and current CMake policy compatibility.
+- Identify the generated source archive's OBS download location.
 * Thu Oct 01 2026 David Nichols <david@qore.org> - 1.4.2-2
 - Use the packaged SDK, generated ABI requirements and offline module tests.

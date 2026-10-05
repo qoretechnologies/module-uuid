@@ -24,3 +24,21 @@ Doxygen cross-references. --without docs and --without tests are available for
 local diagnosis; repository qualification uses the defaults and also runs the
 suite against installed RPMs outside the checkout. Native modules retain the
 distribution's normal ELF stripping and separate debug packages.
+
+``Source0`` identifies the generated archive in the OBS source package.
+``source-manifest.json`` records the exact Git commit and SHA-256 hashes; retain
+that manifest with the source RPM when reproducing a particular build.
+
+API documentation is built with warnings treated as errors. The default RPM
+checks also exercise CMake's uninstall manifest handling, including spaces,
+symlinks, missing files and invalid paths. For a manual staged source install::
+
+    DESTDIR=/tmp/uuid-stage cmake --install build
+    DESTDIR=/tmp/uuid-stage cmake --build build --target uninstall
+
+Uninstall uses the configured build directory's manifest and preserves parent
+directories. Manage installed RPMs with the distribution's package manager.
+
+The Autotools ``make tests`` and ``make tests-ci`` targets use the same current
+``test/uuid-test.qtest`` suite with Qore debugging enabled. JUnit output from
+``make tests-ci`` additionally requires the XML module.
