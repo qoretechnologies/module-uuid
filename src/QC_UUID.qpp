@@ -45,8 +45,8 @@ const HAVE_UNPARSE_CASE = True;
 
 /** @defgroup uuid_formatting_constants UUID Formatting Constants
  */
-namespace Qore::UUID;
 ///@{
+namespace Qore::UUID;
 //! All alphebetic hexadecimal characters will be in upper case
 const UpperCase = QUF_UPPER_CASE;
 
